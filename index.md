@@ -9,7 +9,13 @@ hitheme     : tomorrow      #
 widgets     : []            # {mathjax, quiz, bootstrap}
 mode        : selfcontained # {standalone, draft}
 knit        : slidify::knit2slides
----
+--- 
+
+<style>
+.title-slide {
+  background-color: #FFFFFF; /* #EDE0CF; ; #CA9F9D*/
+}
+</style>
 
 ## Introduction
 
@@ -25,7 +31,7 @@ knit        : slidify::knit2slides
            - Which ones are already included in FICO score?
      - Can we develop an app that predicts the interest rate for prospective credit applications?
 
---- .class #id 
+--- 
 
 ## ANOVA interest rate and other variables
 
@@ -81,7 +87,7 @@ knit        : slidify::knit2slides
    - So let's use a very simple model using FICO Score, Amount Requested and Loan Length
    - Figure 1 shows the actual interest rate versus predicted interest rate
    - The model achieves an R squared value of 0.7453
-   - [Present the predictive model as a Shiny App](http://butlermh.shinyapps.io/LendingClub) 
+   - [The predictive model is available as a Shiny App](http://butlermh.shinyapps.io/LendingClub) 
 
 *** =right
 
