@@ -1,3 +1,4 @@
 shinyapps
 .cache
 *~
+.Rproj.user
