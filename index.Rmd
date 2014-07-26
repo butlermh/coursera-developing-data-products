@@ -1,0 +1,101 @@
+---
+title       : Predicting Interest Rates For Lending Club Loan Applications
+subtitle    : Developing Data Products - Coursera - July 2014
+author      : Mark H. Butler
+job         : student @ Coursera
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Introduction
+
+- Background:
+     - The [Lending Club](https://www.lendingclub.com/home.action) is an on-line lending community 
+     - It [determines the loan interest rate based on](https://www.lendingclub.com/public/how-we-set-interest-rates.action)
+          - characteristics of the loan e.g. amount, period
+          - characteristics of the borrower e.g. employment history, credit history
+     - Several of the borrower characteristics are used to calculate [FICO credit score](http://en.wikipedia.org/wiki/Credit_score_in_the_United_States)
+- Questions:
+     - Can we predict the interest rate using [historic data](https://spark-public.s3.amazonaws.com/dataanalysis/loansData.rda) using this [codebook](https://spark-public.s3.amazonaws.com/dataanalysis/loansCodebook.pdf)? 
+     - Which variables should be included in the predictive model?
+           - Which ones are already included in FICO score?
+     - Can we develop an app that predicts the interest rate for prospective credit applications?
+
+--- .class #id 
+
+## ANOVA interest rate and other variables
+
+```{r echo=FALSE, results='asis'}
+library(xtable)
+load("LendingClubApp/data/loansData.rda")
+loansData$FICO.min <- as.numeric(gsub("-(.*)", "", as.character(loansData$FICO.Range)))
+loansData$FICO.max <- as.numeric(gsub("(.*)-", "", as.character(loansData$FICO.Range)))
+loansData$FICO.mid <- (loansData$FICO.max - loansData$FICO.min) / 2 + loansData$FICO.min
+loansData$FICO.min <- NULL
+loansData$FICO.max <- NULL
+loansData$interest  <- as.numeric(gsub("%","",as.character(loansData$Interest.Rate)))
+loansData$debtToIncome  <- as.numeric(gsub("%","",as.character(loansData$Debt.To.Income.Ratio)))
+loansData = loansData[complete.cases(loansData),]
+loansData$FICO.cut = cut2(loansData$FICO.mid, g=5)
+loansData <- droplevels(loansData)
+aov.i.out <- aov(loansData$interest ~ 
+  loansData$FICO.cut + 
+  scale(loansData$Amount.Requested) + 
+  loansData$Loan.Length + 
+  scale(loansData$Monthly.Income) + 
+  loansData$Inquiries.in.the.Last.6.Months + 
+  loansData$Loan.Purpose +
+  scale(loansData$Open.CREDIT.Lines) + 
+  loansData$Home.Ownership  +
+  loansData$State +
+  scale(loansData$debtToIncome) + 
+  scale(loansData$Revolving.CREDIT.Balance) + 
+  loansData$Employment.Length + 
+  loansData$Inquiries.in.the.Last.6.Months)
+print(xtable(aov.i.out), type="html")
+```
+
+--- .class #id 
+
+## ANOVA FICO score and other variables
+
+```{r echo=FALSE, results='asis'}
+aov.f.out <- aov(loansData$FICO.mid ~ 
+  scale(loansData$Monthly.Income) + 
+  scale(loansData$debtToIncome) + 
+  loansData$Home.Ownership + 
+  loansData$Inquiries.in.the.Last.6.Months +
+  loansData$Loan.Purpose + 
+  scale(loansData$Open.CREDIT.Lines) + 
+  loansData$Inquiries.in.the.Last.6.Months + 
+  loansData$State + 
+  scale(loansData$Revolving.CREDIT.Balance) + 
+  loansData$Employment.Length)
+print(xtable(aov.f.out), type="html")
+```
+
+--- &twocol
+
+## Predictive model
+
+*** =left
+
+- Conclusions: 
+   - Several variables are related to the interest rate but some are also related to FICO score
+   - So let's use a very simple model using FICO Score, Amount Requested and Loan Length
+   - Figure 1 shows the actual interest rate versus predicted interest rate
+   - The model achieves an R squared value of `r summary(fit)$r.squared`
+   - [Present the predictive model as a Shiny App](http://butlermh.shinyapps.io/LendingClub) 
+
+*** =right
+
+```{r, echo=FALSE}
+fit <- lm(interest ~ FICO.cut + scale(log10(Amount.Requested)) + Loan.Length, data=loansData)
+plot(loansData$interest, fit$fitted, xlab="Figure 1: Actual interest rate (percent)", ylab="Predicted interest rate (percent)", col=loansData$FICO.cut, main="Actual interest rate versus predicted interest rate for\nmodel using FICO score, Amount Requested and Loan Length")
+legend('topleft',col=unique(as.numeric(loansData$FICO.cut))[c(4,2,3,1,5)],legend=unique(loansData$FICO.cut)[c(4,2,3,1,5)],pch=19, title="FICO.cut")
+```
+
