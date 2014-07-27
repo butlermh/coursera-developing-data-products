@@ -13,27 +13,38 @@ knit        : slidify::knit2slides
 
 <style>
 .title-slide {
-  background-color: #FFFFFF; /* #EDE0CF; ; #CA9F9D*/
+  background-color: #FFFFFF;
 }
 </style>
 
 ## Introduction
 
-- Background:
-     - The [Lending Club](https://www.lendingclub.com/home.action) is an on-line lending community 
-     - It [determines the loan interest rate based on](https://www.lendingclub.com/public/how-we-set-interest-rates.action)
-          - characteristics of the loan e.g. amount, period
-          - characteristics of the borrower e.g. employment history, credit history
-     - Several of the borrower characteristics are used to calculate [FICO credit score](http://en.wikipedia.org/wiki/Credit_score_in_the_United_States)
-- Questions:
-     - Can we predict the interest rate using [historic data](https://spark-public.s3.amazonaws.com/dataanalysis/loansData.rda) using this [codebook](https://spark-public.s3.amazonaws.com/dataanalysis/loansCodebook.pdf)? 
-     - Which variables should be included in the predictive model?
-           - Which ones are already included in FICO score?
-     - Can we develop an app that predicts the interest rate for prospective credit applications?
+- The [Lending Club](https://www.lendingclub.com/home.action) is an on-line lending community 
+- It [determines the loan interest rate based on](https://www.lendingclub.com/public/how-we-set-interest-rates.action)
+      - characteristics of the loan e.g. 
+          - amount
+          - period
+      - characteristics of the borrower e.g. 
+          - employment history
+          - credit history
+- Several of the borrower characteristics are used to calculate [FICO credit score](http://en.wikipedia.org/wiki/Credit_score_in_the_United_States)
 
 --- 
 
-## ANOVA interest rate and other variables
+## Approach
+
+- Can we predict the interest rate from Lending Club [historic data](https://spark-public.s3.amazonaws.com/dataanalysis/loansData.rda) using this [codebook](https://spark-public.s3.amazonaws.com/dataanalysis/loansCodebook.pdf)? 
+- Which variables should be included in the predictive model?
+- Which ones are already included in FICO score?
+    - Identify using exploratory data analysis
+    - Build multiple models and perform model selection
+- Build a predictive model that predicts the interest rate for prospective credit applications     
+- Make the predictive model available over the web by wrapping it in a Shiny Web app
+- Then users can predict their lending rate without making an application
+
+---
+
+## Example - using ANOVA in the exploratory data analysis
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
 <!-- Sat Jul 26 09:36:24 2014 -->
@@ -55,30 +66,12 @@ knit        : slidify::knit2slides
    </TABLE>
 
 
---- .class #id 
-
-## ANOVA FICO score and other variables
-
-<!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Sat Jul 26 09:51:56 2014 -->
-<TABLE border=1>
-<TR> <TH>  </TH> <TH> Df </TH> <TH> Sum Sq </TH> <TH> Mean Sq </TH> <TH> F value </TH> <TH> Pr(&gt;F) </TH>  </TR>
-  <TR> <TD> scale(loansData$Monthly.Income) </TD> <TD align="right"> 1 </TD> <TD align="right"> 46046.13 </TD> <TD align="right"> 46046.13 </TD> <TD align="right"> 42.62 </TD> <TD align="right"> 0.0000 </TD> </TR>
-  <TR> <TD> scale(loansData$debtToIncome) </TD> <TD align="right"> 1 </TD> <TD align="right"> 121932.56 </TD> <TD align="right"> 121932.56 </TD> <TD align="right"> 112.85 </TD> <TD align="right"> 0.0000 </TD> </TR>
-  <TR> <TD> loansData$Home.Ownership </TD> <TD align="right"> 3 </TD> <TD align="right"> 70192.24 </TD> <TD align="right"> 23397.41 </TD> <TD align="right"> 21.65 </TD> <TD align="right"> 0.0000 </TD> </TR>
-  <TR> <TD> loansData$Inquiries.in.the.Last.6.Months </TD> <TD align="right"> 1 </TD> <TD align="right"> 32914.49 </TD> <TD align="right"> 32914.49 </TD> <TD align="right"> 30.46 </TD> <TD align="right"> 0.0000 </TD> </TR>
-  <TR> <TD> loansData$Loan.Purpose </TD> <TD align="right"> 13 </TD> <TD align="right"> 110946.34 </TD> <TD align="right"> 8534.33 </TD> <TD align="right"> 7.90 </TD> <TD align="right"> 0.0000 </TD> </TR>
-  <TR> <TD> scale(loansData$Open.CREDIT.Lines) </TD> <TD align="right"> 1 </TD> <TD align="right"> 1958.39 </TD> <TD align="right"> 1958.39 </TD> <TD align="right"> 1.81 </TD> <TD align="right"> 0.1783 </TD> </TR>
-  <TR> <TD> loansData$State </TD> <TD align="right"> 45 </TD> <TD align="right"> 52482.02 </TD> <TD align="right"> 1166.27 </TD> <TD align="right"> 1.08 </TD> <TD align="right"> 0.3331 </TD> </TR>
-  <TR> <TD> scale(loansData$Revolving.CREDIT.Balance) </TD> <TD align="right"> 1 </TD> <TD align="right"> 477.25 </TD> <TD align="right"> 477.25 </TD> <TD align="right"> 0.44 </TD> <TD align="right"> 0.5064 </TD> </TR>
-  <TR> <TD> loansData$Employment.Length </TD> <TD align="right"> 11 </TD> <TD align="right"> 5996.18 </TD> <TD align="right"> 545.11 </TD> <TD align="right"> 0.50 </TD> <TD align="right"> 0.9014 </TD> </TR>
-  <TR> <TD> Residuals </TD> <TD align="right"> 2420 </TD> <TD align="right"> 2614837.50 </TD> <TD align="right"> 1080.51 </TD> <TD align="right">  </TD> <TD align="right">  </TD> </TR>
-   </TABLE>
-
-
 --- &twocol
 
 ## Predictive model
+
+
+
 
 *** =left
 

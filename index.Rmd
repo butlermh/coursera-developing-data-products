@@ -19,21 +19,32 @@ knit        : slidify::knit2slides
 
 ## Introduction
 
-- Background:
-     - The [Lending Club](https://www.lendingclub.com/home.action) is an on-line lending community 
-     - It [determines the loan interest rate based on](https://www.lendingclub.com/public/how-we-set-interest-rates.action)
-          - characteristics of the loan e.g. amount, period
-          - characteristics of the borrower e.g. employment history, credit history
-     - Several of the borrower characteristics are used to calculate [FICO credit score](http://en.wikipedia.org/wiki/Credit_score_in_the_United_States)
-- Questions:
-     - Can we predict the interest rate using [historic data](https://spark-public.s3.amazonaws.com/dataanalysis/loansData.rda) using this [codebook](https://spark-public.s3.amazonaws.com/dataanalysis/loansCodebook.pdf)? 
-     - Which variables should be included in the predictive model?
-           - Which ones are already included in FICO score?
-     - Can we develop an app that predicts the interest rate for prospective credit applications?
+- The [Lending Club](https://www.lendingclub.com/home.action) is an on-line lending community 
+- It [determines the loan interest rate based on](https://www.lendingclub.com/public/how-we-set-interest-rates.action)
+      - characteristics of the loan e.g. 
+          - amount
+          - period
+      - characteristics of the borrower e.g. 
+          - employment history
+          - credit history
+- Several of the borrower characteristics are used to calculate [FICO credit score](http://en.wikipedia.org/wiki/Credit_score_in_the_United_States)
 
 --- 
 
-## ANOVA interest rate and other variables
+## Approach
+
+- Can we predict the interest rate from Lending Club [historic data](https://spark-public.s3.amazonaws.com/dataanalysis/loansData.rda) using this [codebook](https://spark-public.s3.amazonaws.com/dataanalysis/loansCodebook.pdf)? 
+- Which variables should be included in the predictive model?
+- Which ones are already included in FICO score?
+    - Identify using exploratory data analysis
+    - Build multiple models and perform model selection
+- Build a predictive model that predicts the interest rate for prospective credit applications     
+- Make the predictive model available over the web by wrapping it in a Shiny Web app
+- Then users can predict their lending rate without making an application
+
+---
+
+## Example - using ANOVA in the exploratory data analysis
 
 ```{r echo=FALSE, results='asis'}
 library(xtable)
@@ -65,28 +76,13 @@ aov.i.out <- aov(loansData$interest ~
 print(xtable(aov.i.out), type="html")
 ```
 
---- .class #id 
-
-## ANOVA FICO score and other variables
-
-```{r echo=FALSE, results='asis'}
-aov.f.out <- aov(loansData$FICO.mid ~ 
-  scale(loansData$Monthly.Income) + 
-  scale(loansData$debtToIncome) + 
-  loansData$Home.Ownership + 
-  loansData$Inquiries.in.the.Last.6.Months +
-  loansData$Loan.Purpose + 
-  scale(loansData$Open.CREDIT.Lines) + 
-  loansData$Inquiries.in.the.Last.6.Months + 
-  loansData$State + 
-  scale(loansData$Revolving.CREDIT.Balance) + 
-  loansData$Employment.Length)
-print(xtable(aov.f.out), type="html")
-```
-
 --- &twocol
 
 ## Predictive model
+
+```{r, echo=FALSE}
+fit <- lm(interest ~ FICO.cut + scale(log10(Amount.Requested)) + Loan.Length, data=loansData)
+```
 
 *** =left
 
@@ -100,8 +96,7 @@ print(xtable(aov.f.out), type="html")
 *** =right
 
 ```{r, echo=FALSE}
-fit <- lm(interest ~ FICO.cut + scale(log10(Amount.Requested)) + Loan.Length, data=loansData)
-plot(loansData$interest, fit$fitted, xlab="Figure 1: Actual interest rate (percent)", ylab="Predicted interest rate (percent)", col=loansData$FICO.cut, main="Actual interest rate versus predicted interest rate for\nmodel using FICO score, Amount Requested and Loan Length")
+plot(loansData$interest, fit$fitted, xlab="Actual interest rate (percent)", ylab="Predicted interest rate (percent)", col=loansData$FICO.cut, main="Figure 1: Actual interest rate versus predicted interest rate for\nmodel using FICO score, Amount Requested and Loan Length")
 legend('topleft',col=unique(as.numeric(loansData$FICO.cut))[c(4,2,3,1,5)],legend=unique(loansData$FICO.cut)[c(4,2,3,1,5)],pch=19, title="FICO.cut")
 ```
 
